@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency("resque", "~> 1.22")
   s.add_runtime_dependency("json")
 
-  s.add_development_dependency("rake")
+  s.add_development_dependency("test-unit")
   s.add_development_dependency("bundler")
 
   s.files         = Dir["lib/**/*"]
