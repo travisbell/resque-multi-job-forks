@@ -12,8 +12,8 @@ require 'resque-multi-job-forks'
 require 'timeout'
 
 # setup redis & resque.
-redis = Redis.new(:db => 1)
-Resque.redis = redis
+$redis = Redis.new(:db => 1)
+Resque.redis = $redis
 
 # adds simple STDOUT logging to test workers.
 # set `VERBOSE=true` when running the tests to view resques log output.
