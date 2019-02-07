@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency("test-unit")
   s.add_development_dependency("bundler")
+  s.add_development_dependency("rake")
 
   s.files         = Dir["lib/**/*"]
   s.test_files    = Dir["test/**/*"]
