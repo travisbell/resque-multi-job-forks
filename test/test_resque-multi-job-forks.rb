@@ -33,7 +33,7 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
 
     Resque.enqueue(SequenceJob, 1)
     Resque.enqueue(SequenceJob, 2)
-    Thread.new do
+    t = Thread.new do
       sleep 1 # before first job can complete
       @worker.shutdown
     end
@@ -45,6 +45,7 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
     # test the sequence is correct.
     assert_equal([:before_fork, :after_fork, :work_1,
                   :before_child_exit_1], sequence, 'correct sequence')
+    t.join
   end
 
   def test_immediate_shutdown_during_first_job
@@ -54,9 +55,9 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
 
     Resque.enqueue(SequenceJob, 1)
     Resque.enqueue(SequenceJob, 2)
-    Thread.new do
+    t = Thread.new do
       sleep 0.5 # before first job can complete
-      @worker.shutdown!
+      Process.kill("INT", @worker.pid) # triggers shutdown! in main thread
     end
     # INTERVAL=0 will exit when no more jobs left
     @worker.work(0)
@@ -65,6 +66,7 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
 
     # test the sequence is correct.
     assert_equal([:before_fork, :after_fork], sequence, 'correct sequence')
+    t.join
   end
 
   def test_sigterm_shutdown_during_first_job
@@ -75,9 +77,9 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
 
     Resque.enqueue(SequenceJob, 1)
     Resque.enqueue(SequenceJob, 2)
-    Thread.new do
-      sleep 0.5 # before first job can complete
-      @worker.shutdown!
+    t = Thread.new do
+      sleep 1.0 # before first job can complete
+      Process.kill("INT", @worker.pid) # triggers shutdown! in main thread
     end
     # INTERVAL=0 will exit when no more jobs left
     @worker.work(0)
@@ -87,6 +89,7 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
     # test the sequence is correct.
     assert_equal([:before_fork, :after_fork,
                   :before_child_exit_1], sequence, 'correct sequence')
+    t.join
   end
 
   # test we can also limit fork job process by a job limit.
