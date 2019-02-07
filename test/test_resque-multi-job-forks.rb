@@ -2,7 +2,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), '/helper')
 
 class TestResqueMultiJobForks < Test::Unit::TestCase
   def setup
-    $SEQUENCE = []
+    $SEQ_READER, $SEQ_WRITER = IO.pipe
     $redis.flushdb
     @worker = Resque::Worker.new(:jobs)
   end
@@ -16,39 +16,38 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
     Resque.enqueue(SequenceJob, 3)
     Resque.enqueue(SequenceJob, 4)
 
-    # make sure we don't take longer then 15 seconds.
-    begin
-      Timeout::timeout(15) { @worker.work(1) }
-    rescue Timeout::Error
-    end
+    # INTERVAL=0 will exit when no more jobs left
+    @worker.work(0)
+    $SEQ_WRITER.close
+    sequence = $SEQ_READER.each_line.map {|l| l.strip.to_sym }
 
     # test the sequence is correct.
     assert_equal([:before_fork, :after_fork, :work_1, :work_2, :work_3,
                   :before_child_exit_3, :before_fork, :after_fork, :work_4,
-                  :before_child_exit_1], $SEQUENCE, 'correct sequence')
+                  :before_child_exit_1], sequence, 'correct sequence')
   end
 
   # test we can also limit fork job process by a job limit.
   def test_job_limit_sequence_of_events
-    # only allow enough time for 3 jobs to process.
+    # only allow 20 jobs per fork
     ENV['JOBS_PER_FORK'] = '20'
 
     # queue 40 jobs.
     (1..40).each { |i| Resque.enqueue(QuickSequenceJob, i) }
 
-    begin
-      Timeout::timeout(3) { @worker.work(1) }
-    rescue Timeout::Error
-    end
+    # INTERVAL=0 will exit when no more jobs left
+    @worker.work(0)
+    $SEQ_WRITER.close
+    sequence = $SEQ_READER.each_line.map {|l| l.strip.to_sym }
 
-    assert_equal :before_fork, $SEQUENCE[0], 'first before_fork call.'
-    assert_equal :after_fork, $SEQUENCE[1], 'first after_fork call.'
-    assert_equal :work_20, $SEQUENCE[21], '20th chunk of work.'
-    assert_equal :before_child_exit_20, $SEQUENCE[22], 'first before_child_exit call.'
-    assert_equal :before_fork, $SEQUENCE[23], 'final before_fork call.'
-    assert_equal :after_fork, $SEQUENCE[24], 'final after_fork call.'
-    assert_equal :work_40, $SEQUENCE[44], '40th chunk of work.'
-    assert_equal :before_child_exit_20, $SEQUENCE[45], 'final before_child_exit call.'
+    assert_equal :before_fork,          sequence[0],  'first before_fork call.'
+    assert_equal :after_fork,           sequence[1],  'first after_fork call.'
+    assert_equal :work_20,              sequence[21], '20th chunk of work.'
+    assert_equal :before_child_exit_20, sequence[22], 'first before_child_exit call.'
+    assert_equal :before_fork,          sequence[23], 'final before_fork call.'
+    assert_equal :after_fork,           sequence[24], 'final after_fork call.'
+    assert_equal :work_40,              sequence[44], '40th chunk of work.'
+    assert_equal :before_child_exit_20, sequence[45], 'final before_child_exit call.'
   end
 
   def teardown

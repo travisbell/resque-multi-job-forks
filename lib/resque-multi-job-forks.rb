@@ -15,6 +15,14 @@ module Resque
     end
 
     if multi_jobs_per_fork? && !method_defined?(:shutdown_without_multi_job_forks)
+      def work_with_multi_job_forks(*args)
+        pid # forces @pid to be set in the parent
+        work_without_multi_job_forks(*args)
+        release_and_exit! unless is_parent_process?
+      end
+      alias_method :work_without_multi_job_forks, :work
+      alias_method :work, :work_with_multi_job_forks
+
       def perform_with_multi_job_forks(job = nil)
         perform_without_multi_job_forks(job)
         hijack_fork unless fork_hijacked?
@@ -49,7 +57,7 @@ module Resque
         working_on_without_worker_registration(job)
       end
       alias_method :working_on_without_worker_registration, :working_on
-      alias_method :working_on, :working_on_with_worker_registration    
+      alias_method :working_on, :working_on_with_worker_registration
 
       # Reconnect only once
       def reconnect_with_multi_job_forks
@@ -73,7 +81,12 @@ module Resque
     end
 
     def is_parent_process?
-      @child
+      @child || @pid == Process.pid
+    end
+
+    def release_and_exit!
+      release_fork if fork_hijacked?
+      run_at_exit_hooks ? exit : exit!(true)
     end
 
     def fork_hijacked?
