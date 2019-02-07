@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.version     = "0.4.4"
   s.authors     = ["Mick Staugaard", "Luke Antins", 'Sergio Tulentsev']
   s.email       = ["mick@zendesk.com", "luke@lividpenguin.com", 'sergei.tulentsev@gmail.com']
-  s.homepage    = "http://github.com/staugaard/resque-multi-job-forks"
+  s.homepage    = "https://github.com/stulentsev/resque-multi-job-forks"
   s.summary     = "Have your resque workers process more that one job"
   s.description = "When your resque jobs are frequent and fast, the overhead of forking and running your after_fork might get too big."
 
