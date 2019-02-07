@@ -15,6 +15,20 @@ module Resque
     end
 
     if multi_jobs_per_fork? && !method_defined?(:shutdown_without_multi_job_forks)
+
+      def fork(&block)
+        if child = Kernel.fork
+          return child
+        else
+          if term_child
+            unregister_signal_handlers
+            trap('QUIT') { shutdown }
+          end
+          raise NotImplementedError, "Pretending to not have forked"
+          # perform_with_fork will run the job and continue working...
+        end
+      end
+
       def work_with_multi_job_forks(*args)
         pid # forces @pid to be set in the parent
         work_without_multi_job_forks(*args)
@@ -24,7 +38,7 @@ module Resque
       alias_method :work, :work_with_multi_job_forks
 
       def perform_with_multi_job_forks(job = nil)
-        trap('QUIT') { shutdown } unless fork_hijacked?
+        @fork_per_job = true unless fork_hijacked? # reconnect and after_fork
         perform_without_multi_job_forks(job)
         hijack_fork unless fork_hijacked?
         @jobs_processed += 1
@@ -102,17 +116,16 @@ module Resque
       Resque.after_fork = Resque.before_fork = nil
       @release_fork_limit = fork_job_limit
       @jobs_processed = 0
-      @cant_fork = true
-      trap('QUIT') { shutdown }
+      @fork_per_job = false
     end
 
     def release_fork
       log "jobs processed by child: #{jobs_processed}; rss: #{rss}"
       run_hook :before_child_exit, self
       Resque.after_fork, Resque.before_fork = *@suppressed_fork_hooks
-      @release_fork_limit = @jobs_processed = @cant_fork = nil
+      @release_fork_limit = @jobs_processed = nil
       log 'hijack over, counter terrorists win.'
-      @shutdown = true unless $TESTING
+      @shutdown = true
     end
 
     def fork_job_limit

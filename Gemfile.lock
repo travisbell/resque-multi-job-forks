@@ -3,7 +3,7 @@ PATH
   specs:
     resque-multi-job-forks (0.4.4)
       json
-      resque (~> 1.26.0)
+      resque (~> 1.27.0)
 
 GEM
   remote: http://rubygems.org/
@@ -20,7 +20,7 @@ GEM
     redis (4.1.0)
     redis-namespace (1.6.0)
       redis (>= 3.0.4)
-    resque (1.26.0)
+    resque (1.27.4)
       mono_logger (~> 1.0)
       multi_json (~> 1.0)
       redis-namespace (~> 1.3)

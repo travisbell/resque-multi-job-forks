@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.description = "When your resque jobs are frequent and fast, the overhead of forking and running your after_fork might get too big."
 
   # Depends on minor version, due to monkeypatches Resque::Worker internals.
-  s.add_runtime_dependency("resque", "~> 1.26.0")
+  s.add_runtime_dependency("resque", "~> 1.27.0")
   s.add_runtime_dependency("json")
 
   s.add_development_dependency("test-unit")

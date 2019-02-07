@@ -129,6 +129,7 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
   def teardown
     # make sure we don't clobber any other tests.
     ENV['JOBS_PER_FORK'] = nil
+    Resque::Worker.kill_all_heartbeat_threads
   end
 
 end
