@@ -24,6 +24,7 @@ module Resque
       alias_method :work, :work_with_multi_job_forks
 
       def perform_with_multi_job_forks(job = nil)
+        trap('QUIT') { shutdown } unless fork_hijacked?
         perform_without_multi_job_forks(job)
         hijack_fork unless fork_hijacked?
         @jobs_processed += 1

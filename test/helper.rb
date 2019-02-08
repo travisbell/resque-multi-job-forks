@@ -32,8 +32,8 @@ end
 class SequenceJob
   @queue = :jobs
   def self.perform(i)
-    $SEQ_WRITER.print "work_#{i}\n"
     sleep(2)
+    $SEQ_WRITER.print "work_#{i}\n"
   end
 end
 
