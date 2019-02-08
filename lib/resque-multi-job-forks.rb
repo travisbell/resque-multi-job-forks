@@ -115,7 +115,7 @@ module Resque
     end
 
     def fork_job_limit
-      jobs_per_fork.nil? ? Time.now.to_i + seconds_per_fork : jobs_per_fork
+      jobs_per_fork.nil? ? Time.now.to_f + seconds_per_fork : jobs_per_fork
     end
 
     def fork_job_limit_reached?
@@ -123,7 +123,7 @@ module Resque
     end
 
     def fork_job_limit_remaining
-      jobs_per_fork.nil? ? @release_fork_limit - Time.now.to_i : jobs_per_fork - @jobs_processed
+      jobs_per_fork.nil? ? @release_fork_limit - Time.now.to_f : jobs_per_fork - @jobs_processed
     end
 
     def seconds_per_fork
