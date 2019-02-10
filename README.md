@@ -14,6 +14,13 @@ Or install it yourself as:
 
     $ gem install resque-multi-job-forks
     
+## Version compatibility
+
+* For resque 1.27 and later, use 0.5.0 or later.
+* For resque 1.26, use 0.4.5.
+
+(this should be handled correctly by bundler, but mentioning just in case)
+
 ## Usage
 
 If you have very frequent and fast resque jobs, the overhead of forking and running your after_fork hook, might get too big. Using this resque plugin, you can have your workers perform more than one job, before terminating.
