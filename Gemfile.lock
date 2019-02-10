@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    resque-multi-job-forks (0.4.5)
+    resque-multi-job-forks (0.5.0)
       json
       resque (>= 1.27.0, < 2.1)
 
@@ -47,4 +47,4 @@ DEPENDENCIES
   test-unit
 
 BUNDLED WITH
-   1.17.2
+   2.0.1
