@@ -20,10 +20,20 @@ Resque.redis = $redis
 module Resque
   class Worker
 
-    def log(msg)
-      puts "*** #{msg}" unless ENV['VERBOSE'].nil?
+    def log_with_severity(severity, msg)
+      if ENV['VERBOSE']
+        s = severity.to_s[0].upcase
+        $stderr.print "*** [#{Time.now}] [#{Process.pid}] #{self} #{s}: #{msg}\n"
+      end
     end
-    alias_method :log!, :log
+
+    def log(message)
+      log_with_severity :info, message
+    end
+
+    def log!(message)
+      log_with_severity :debug, message
+    end
 
   end
 end

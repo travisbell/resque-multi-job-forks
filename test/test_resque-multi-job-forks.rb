@@ -8,6 +8,7 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
   end
 
   def test_timeout_limit_sequence_of_events
+    @worker.log! "in test_timeout_limit_sequence_of_events"
     # only allow enough time for 3 jobs to process.
     @worker.seconds_per_fork = 3
 
@@ -28,6 +29,7 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
   end
 
   def test_graceful_shutdown_during_first_job
+    @worker.log! "in test_graceful_shutdown_during_first_job"
     # enough time for all jobs to process.
     @worker.seconds_per_fork = 60
 
@@ -49,6 +51,7 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
   end
 
   def test_immediate_shutdown_during_first_job
+    @worker.log! "in test_immediate_shutdown_during_first_job"
     # enough time for all jobs to process.
     @worker.seconds_per_fork = 60
     @worker.term_child = false
@@ -70,6 +73,7 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
   end
 
   def test_sigterm_shutdown_during_first_job
+    @worker.log! "in test_sigterm_shutdown_during_first_job"
     # enough time for all jobs to process.
     @worker.seconds_per_fork = 60
     @worker.term_child = true
@@ -94,6 +98,7 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
 
   # test we can also limit fork job process by a job limit.
   def test_job_limit_sequence_of_events
+    @worker.log! "in test_job_limit_sequence_of_events"
     # only allow 20 jobs per fork
     ENV['JOBS_PER_FORK'] = '20'
 
@@ -105,18 +110,26 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
     $SEQ_WRITER.close
     sequence = $SEQ_READER.each_line.map {|l| l.strip.to_sym }
 
-    assert_equal :before_fork,          sequence[0],  'first before_fork call.'
-    assert_equal :after_fork,           sequence[1],  'first after_fork call.'
-    assert_equal :work_20,              sequence[21], '20th chunk of work.'
-    assert_equal :before_child_exit_20, sequence[22], 'first before_child_exit call.'
-    assert_equal :before_fork,          sequence[23], 'final before_fork call.'
-    assert_equal :after_fork,           sequence[24], 'final after_fork call.'
-    assert_equal :work_40,              sequence[44], '40th chunk of work.'
-    assert_equal :before_child_exit_20, sequence[45], 'final before_child_exit call.'
+    assert_equal(%i[
+      before_fork after_fork
+      work_1 work_2 work_3 work_4 work_5
+      work_6 work_7 work_8 work_9 work_10
+      work_11 work_12 work_13 work_14 work_15
+      work_16 work_17 work_18 work_19 work_20
+      before_child_exit_20
+      before_fork after_fork
+      work_21 work_22 work_23 work_24 work_25
+      work_26 work_27 work_28 work_29 work_30
+      work_31 work_32 work_33 work_34 work_35
+      work_36 work_37 work_38 work_39 work_40
+      before_child_exit_20
+    ], sequence, 'correct sequence')
   end
 
   def teardown
     # make sure we don't clobber any other tests.
     ENV['JOBS_PER_FORK'] = nil
+    Resque::Worker.kill_all_heartbeat_threads
   end
+
 end
