@@ -54,14 +54,14 @@ module Resque
       alias_method :shutdown?, :shutdown_with_multi_job_forks?
 
       def shutdown_with_multi_job_forks
-        shutdown_child if is_parent_process?
+        shutdown_child
         shutdown_without_multi_job_forks
       end
       alias_method :shutdown_without_multi_job_forks, :shutdown
       alias_method :shutdown, :shutdown_with_multi_job_forks
 
       def pause_processing_with_multi_job_forks
-        shutdown_child if is_parent_process?
+        shutdown_child
         pause_processing_without_multi_job_forks
       end
       alias_method :pause_processing_without_multi_job_forks, :pause_processing
@@ -89,6 +89,7 @@ module Resque
     # multiple jobs per fork. The QUIT signal normally does a graceful shutdown,
     # and is re-registered in children (term_child normally unregisters it).
     def shutdown_child
+      return unless @child
       begin
         log! "multi_jobs_per_fork: Sending QUIT signal to #{@child}"
         Process.kill('QUIT', @child)
