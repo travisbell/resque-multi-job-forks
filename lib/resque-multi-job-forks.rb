@@ -169,16 +169,11 @@ module Resque
   # Call with a block to set the hook.
   # Call with no arguments to return the hook.
   def self.before_child_exit(&block)
-    if block
-      @before_child_exit ||= []
-      @before_child_exit << block
-    end
-    @before_child_exit
+    block ? register_hook(:before_child_exit, block) : hooks(:before_child_exit)
   end
 
   # Set the before_child_exit proc.
   def self.before_child_exit=(before_child_exit)
-    @before_child_exit = before_child_exit.respond_to?(:each) ? before_child_exit : [before_child_exit].compact
+    register_hook(:before_child_exit, block)
   end
-
 end
