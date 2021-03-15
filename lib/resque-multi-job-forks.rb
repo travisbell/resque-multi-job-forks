@@ -91,7 +91,7 @@ module Resque
     def shutdown_child
       return unless @child
       begin
-        log! "multi_jobs_per_fork: Sending QUIT signal to #{@child}"
+        log_with_severity :debug, "multi_jobs_per_fork: Sending QUIT signal to #{@child}"
         Process.kill('QUIT', @child)
       rescue Errno::ESRCH
         nil
@@ -112,7 +112,7 @@ module Resque
     end
 
     def hijack_fork
-      log 'hijack fork.'
+      log_with_severity :debug, 'hijack fork.'
       @suppressed_fork_hooks = [Resque.after_fork, Resque.before_fork]
       Resque.after_fork = Resque.before_fork = nil
       @release_fork_limit = fork_job_limit
@@ -121,11 +121,11 @@ module Resque
     end
 
     def release_fork
-      log "jobs processed by child: #{jobs_processed}; rss: #{rss}"
+      log_with_severity :info, "jobs processed by child: #{jobs_processed}; rss: #{rss}"
       run_hook :before_child_exit, self
       Resque.after_fork, Resque.before_fork = *@suppressed_fork_hooks
       @release_fork_limit = @jobs_processed = nil
-      log 'hijack over, counter terrorists win.'
+      log_with_severity :debug, 'hijack over, counter terrorists win.'
       @shutdown = true
     end
 
