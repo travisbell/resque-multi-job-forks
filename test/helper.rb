@@ -27,14 +27,6 @@ module Resque
       end
     end
 
-    def log(message)
-      log_with_severity :info, message
-    end
-
-    def log!(message)
-      log_with_severity :debug, message
-    end
-
   end
 end
 

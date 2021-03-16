@@ -8,7 +8,7 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
   end
 
   def test_timeout_limit_sequence_of_events
-    @worker.log! "in test_timeout_limit_sequence_of_events"
+    @worker.log_with_severity :debug, "in test_timeout_limit_sequence_of_events"
     # only allow enough time for 3 jobs to process.
     @worker.seconds_per_fork = 3
 
@@ -29,7 +29,7 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
   end
 
   def test_graceful_shutdown_during_first_job
-    @worker.log! "in test_graceful_shutdown_during_first_job"
+    @worker.log_with_severity :debug, "in test_graceful_shutdown_during_first_job"
     # enough time for all jobs to process.
     @worker.seconds_per_fork = 60
 
@@ -51,7 +51,7 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
   end
 
   def test_immediate_shutdown_during_first_job
-    @worker.log! "in test_immediate_shutdown_during_first_job"
+    @worker.log_with_severity :debug, "in test_immediate_shutdown_during_first_job"
     # enough time for all jobs to process.
     @worker.seconds_per_fork = 60
     @worker.term_child = false
@@ -73,7 +73,7 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
   end
 
   def test_sigterm_shutdown_during_first_job
-    @worker.log! "in test_sigterm_shutdown_during_first_job"
+    @worker.log_with_severity :debug, "in test_sigterm_shutdown_during_first_job"
     # enough time for all jobs to process.
     @worker.seconds_per_fork = 60
     @worker.term_child = true
@@ -98,7 +98,7 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
 
   # test we can also limit fork job process by a job limit.
   def test_job_limit_sequence_of_events
-    @worker.log! "in test_job_limit_sequence_of_events"
+    @worker.log_with_severity :debug, "in test_job_limit_sequence_of_events"
     # only allow 20 jobs per fork
     ENV['JOBS_PER_FORK'] = '20'
 
