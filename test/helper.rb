@@ -19,6 +19,7 @@ Resque.redis = $redis
 # set `VERBOSE=true` when running the tests to view resques log output.
 module Resque
   class Worker
+    attr_accessor :start_lag
 
     def log_with_severity(severity, msg)
       if ENV['VERBOSE']
@@ -27,6 +28,18 @@ module Resque
       end
     end
 
+    def report_failed_job(job, exception)
+      $SEQ_WRITER.print "failed_job_#{exception.class.name.downcase.gsub('::', '_')}\n"
+    end
+
+    def fork_hijacked?
+      if @release_fork_limit
+        if start_lag
+          sleep start_lag
+        end
+      end
+      @release_fork_limit
+    end
   end
 end
 

@@ -91,8 +91,32 @@ class TestResqueMultiJobForks < Test::Unit::TestCase
     sequence = $SEQ_READER.each_line.map {|l| l.strip.to_sym }
 
     # test the sequence is correct.
-    assert_equal([:before_fork, :after_fork,
+    assert_equal([:before_fork, :after_fork, :failed_job_resque_termexception,
                   :before_child_exit_1], sequence, 'correct sequence')
+    t.join
+  end
+
+  def test_shutdown_between_jobs
+    @worker.log_with_severity :debug, "in test_sigterm_shutdown_during_first_job"
+    # enough time for all jobs to process.
+    @worker.seconds_per_fork = 60
+    @worker.term_child = true
+    @worker.graceful_term = true
+    @worker.term_timeout = 0.5
+    @worker.start_lag = 1
+
+    Resque.enqueue(QuickSequenceJob, 1)
+    Resque.enqueue(SequenceJob, 2)
+    t = Thread.new do
+      sleep 2
+      Process.kill("TERM", @worker.pid)
+    end
+    @worker.work(0)
+    $SEQ_WRITER.close
+
+    sequence = $SEQ_READER.each_line.map {|l| l.strip.to_sym }
+    assert_equal([:before_fork, :after_fork, :work_1, :before_child_exit_1, :failed_job_resque_worker_workerterminated], sequence, 'correct sequence')
+
     t.join
   end
 
