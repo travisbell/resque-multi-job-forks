@@ -1,14 +1,14 @@
 PATH
   remote: .
   specs:
-    resque-multi-job-forks (0.5.3)
+    resque-multi-job-forks (0.5.5)
       json
-      resque (>= 1.27.0, < 2.2)
+      resque (>= 1.27.0, < 2.3)
 
 GEM
   remote: http://rubygems.org/
   specs:
-    json (2.5.1)
+    json (2.6.1)
     mono_logger (1.1.1)
     multi_json (1.15.0)
     mustermann (1.1.1)
@@ -18,10 +18,10 @@ GEM
     rack-protection (2.1.0)
       rack
     rake (12.3.2)
-    redis (4.4.0)
+    redis (4.5.1)
     redis-namespace (1.8.1)
       redis (>= 3.0.4)
-    resque (2.1.0)
+    resque (2.2.0)
       mono_logger (~> 1.0)
       multi_json (~> 1.0)
       redis-namespace (~> 1.6)
